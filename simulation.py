@@ -41,7 +41,7 @@ class Boid:
                 avg_angle += boid.angle
         
         com = [avg_x/num_close_boids-self._pos[0], avg_y/num_close_boids-self._pos[1]] #absolute pos?
-        svec = [-(avg_x-self.pos[0]*num_close_boids), -(avg_y-self.pos[1]*num_close_boids)] #relative 'goal' velocity vector?
+        svec = [-(avg_x-self.pos[0]*num_close_boids*0.1), -(avg_y-self.pos[1]*num_close_boids*0.1)] #relative 'goal' velocity vector?
 
         avg_angle /= num_close_boids # 'goal' angle
         avec = [ANGLE_FACTOR*math.cos(avg_angle), ANGLE_FACTOR*math.sin(avg_angle)]
@@ -91,13 +91,23 @@ def update(boids: list[Boid]) -> None:
         vy = boid.vel*math.sin(theta)
 
         tvec = boid.goal_velocity_vector(boids)
+        if boid.pos[0] < 200:
+            tvec[0] += 100
+        if boid.pos[0] > 700:
+            tvec[0] -= 100
+        if boid.pos[1] > 700:
+            tvec[1] += 100
+        if boid.pos[1] < 200:
+            tvec[1] -= 100
+
         diff_angle = math.acos(dproduct([vx, vy], tvec)/(vector_magnitude([vx, vy])*vector_magnitude(tvec)))
         
         if tvec[1] > vy:
             diff_angle *= -1
 
-        boid.vel += math.cos(diff_angle)*vector_magnitude() #distance from center of mass
-        boid.angle += diff_angle*DT*vector_magnitude(#distance from com)
+
+        boid.vel = abs(math.cos(diff_angle))*100#*vector_magnitude() #distance from center of mass
+        boid.angle += diff_angle*DT#*vector_magnitude() #distance from com
         boid.pos[0] += vx*DT
         boid.pos[1] += vy*DT
 
