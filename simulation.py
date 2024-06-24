@@ -1,3 +1,5 @@
+# https://medium.com/fragmentblog/simulating-flocking-with-the-boids-algorithm-92aef51b9e00
+
 import pygame
 import sys
 import math
