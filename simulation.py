@@ -87,27 +87,33 @@ def vector_magnitude(v: list[float]) -> float:
     return sum([s * s for s in v]) ** 0.5
 
 def update(boids: list[Boid]) -> None:
-    for boid in boids:
+    for i, boid in enumerate(boids):
         theta = boid.angle + math.pi + 1.15257199722 #arctan(18/8)
+        if theta > 2 * math.pi:
+            theta -= 2 * math.pi
+
         vx = boid.vel*math.cos(theta)
         vy = boid.vel*math.sin(theta)
 
         tvec = boid.goal_velocity_vector(boids)
-        if boid.pos[0] < 200:
-            tvec[0] += 100
+        #if i == 0:
+            #print(tvec)
+        if boid.pos[0] < 200 and theta > math.pi/2 and theta < 3*math.pi/2:
+            if i == 0:
+                print("ran")   
+            tvec[0] += 700
         if boid.pos[0] > 700:
-            tvec[0] -= 100
+           tvec[0] -= 700
         if boid.pos[1] > 700:
-            tvec[1] += 100
+            tvec[1] += 700
         if boid.pos[1] < 200:
-            tvec[1] -= 100
+            tvec[1] -= 700
 
         diff_angle = math.acos(dproduct([vx, vy], tvec)/(vector_magnitude([vx, vy])*vector_magnitude(tvec)))
-        
+    
         if tvec[1] > vy:
             diff_angle *= -1
-
-
+        
         boid.vel = abs(math.cos(diff_angle))*100#*vector_magnitude() #distance from center of mass
         boid.angle += diff_angle*DT#*vector_magnitude() #distance from com
         boid.pos[0] += vx*DT
