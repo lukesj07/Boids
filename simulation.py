@@ -1,5 +1,3 @@
-# https://medium.com/fragmentblog/simulating-flocking-with-the-boids-algorithm-92aef51b9e00
-
 import pygame
 import sys
 import math
@@ -29,33 +27,33 @@ class Boid:
         y2 = (8)*math.sin(self._angle)+(18)*math.cos(self._angle)+self._pos[1]
         pygame.draw.polygon(surface, WHITE, [self._pos, (x1, y1), (x2, y2)])
 
+    def loop_distance(self, boid: "Boid") -> float:
+        horizontal_dist = 900 - max(self.pos[0], boid.pos[0]) + min(self.pos[0], boid.pos[0])
+        vertical_dist = 900 - max(self.pos[1], boid.pos[1]) + min(self.pos[1], boid.pos[1])
+        return [horizontal_dist, vertical_dist]
+
     def goal_velocity_vector(self, boids: list["Boid"]) -> list[float]:
         num_close_boids = 0
         avg_x, avg_y = 0, 0
         svec = [0, 0]
         avg_angle = 0
         for boid in boids:
-            if self != boid and vector_magnitude(self.calculate_distance_vector(boid)) < 250:
+            loop_d = self.loop_distance(boid)
+            if self != boid and (vector_magnitude(self.calculate_distance_vector(boid)) < 200 or loop_d[0] < 200 or loop_d[1] < 200):
                 num_close_boids += 1
-
                 avg_x += boid.pos[0]
                 avg_y += boid.pos[1]
-                
                 avg_angle += boid.angle
        
-
         if num_close_boids == 0:
             return [450-self.pos[0], 450-self.pos[1]]
 
         com = [(avg_x/num_close_boids-self._pos[0]*5), (avg_y/num_close_boids-self._pos[1])*5]
-        svec = [-(avg_x-self.pos[0]*num_close_boids*0.01), -(avg_y-self.pos[1]*num_close_boids*0.01)] #relative 'goal' velocity vector?
-
+        svec = [-(avg_x-self.pos[0]*num_close_boids*0.5), -(avg_y-self.pos[1]*num_close_boids*0.5)]
         avg_angle /= num_close_boids # 'goal' angle
         avec = [ANGLE_FACTOR*math.cos(avg_angle)*200, ANGLE_FACTOR*math.sin(avg_angle)*200]
 
-
         return [com[i]+svec[i]+avec[i] for i in range(len(com))]
-
 
 
     def calculate_distance_vector(self, other: "Boid") -> list[float]:
@@ -100,29 +98,10 @@ def update(boids: list[Boid]) -> None:
 
         vx = boid.vel*math.cos(theta)
         vy = boid.vel*math.sin(theta)
-
         tvec = boid.goal_velocity_vector(boids)
-        #if i == 0:
-            #print(tvec)]
-        """
-        temp_tvec = tvec
-        if boid.pos[0] < 200: #and theta > math.pi/2 and theta < 3*math.pi/2:
-            if i == 0:
-                print("ran")
-            temp_tvec[0] = tvec[0] + 1000
-        if boid.pos[0] > 700:
-            temp_tvec[0] = tvec[0] - 1000
-        if boid.pos[1] > 700:
-            temp_tvec[1] = tvec[1] + 1000
-        if boid.pos[1] < 200:
-            temp_tvec[1] = tvec[1] - 1000
-        """
-        flag = False
+        
         if boid.pos[1] <= 0:
-            print("ran")
-            boid.pos = [boid.pos[0], 900]
-            print(boid.pos)
-            flag = True
+            boid.pos[1] = 900
         elif boid.pos[1] >= 900:
             boid.pos[1] = 0
         if boid.pos[0] <= 0:
@@ -130,33 +109,25 @@ def update(boids: list[Boid]) -> None:
         elif boid.pos[0] >= 900:
             boid.pos[0] = 0
 
-
-        
         diff_angle = math.acos(dproduct([vx, vy], tvec)/(vector_magnitude([vx, vy])*vector_magnitude(tvec)))
-    
         if tvec[1] > vy:
             diff_angle *= -1
         
-        boid.vel = abs(math.cos(diff_angle))*100#*vector_magnitude() #distance from center of mass
-        boid.angle += diff_angle*DT#*vector_magnitude() #distance from com
+        boid.vel = abs(math.cos(diff_angle))*150
+        boid.angle += diff_angle*DT
         boid.pos[0] += vx*DT
         boid.pos[1] += vy*DT
-
 
 def main():
     run = True
     clock = pygame.time.Clock()
     boids = []
-    for i in range(10):
+    for i in range(60):
         angle = random.uniform(-1, 1) + math.pi
         pos = [random.randint(0, 900), random.randint(0,900)]
-        b = Boid(pos, 20, angle)
+        b = Boid(pos, random.randint(-50, 50), angle)
         boids.append(b)
         
-    #b1 = Boid([400, 470], 20, math.pi)
-    #b2 = Boid([500, 500], 5, 0)
-    #b3 = Boid([400, 500], 50, math.pi-2)
-    #boids = [b1, b2, b3]
     while run:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -169,9 +140,9 @@ def main():
 
         surface.fill(BLACK)
         update(boids)
+        
         for b in boids:
             b.draw_boid()
-
 
         display.flip()
 
