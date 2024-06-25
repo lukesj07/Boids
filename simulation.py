@@ -13,9 +13,13 @@ BOID_LEG = 8
 BOID_HEIGHT = 18
 SVEC_FACTOR = 0.5
 AVEC_FACTOR = 200
-MVEC_FACTOR = 5
+MVEC_FACTOR = 7
 VISION_RADIUS = 200
-VELOCITY_FACTOR = 150
+ACC_FACTOR = 0.5
+MIN_VEL = 50
+MAX_VEL = 300
+NUM_OF_BOIDS = 70
+
 
 pygame.init()
 display = pygame.display
@@ -47,11 +51,22 @@ class Boid:
         avg_angle = 0
         for boid in boids:
             loop_d = self.loop_distance(boid)
-            if self != boid and (vector_magnitude(self.calculate_distance_vector(boid)) < VISION_RADIUS or loop_d[0] < VISION_RADIUS or loop_d[1] < VISION_RADIUS):
-                num_close_boids += 1
-                avg_x += boid.pos[0]
-                avg_y += boid.pos[1]
-                avg_angle += boid.angle
+            if self != boid:
+                if vector_magnitude(self.calculate_distance_vector(boid)) < VISION_RADIUS:
+                    num_close_boids += 1
+                    avg_x += boid.pos[0]
+                    avg_y += boid.pos[1]
+                    avg_angle += boid.angle
+                elif loop_d[0] < VISION_RADIUS:
+                    num_close_boids += 1
+                    avg_angle += boid.angle
+                    avg_x -= boid.pos[0]
+                elif loop_d[1] < VISION_RADIUS:
+                    num_close_boids += 1
+                    avg_angle += boid.angle
+                    avg_y -= boid.pos[1]
+
+
        
         if num_close_boids == 0:
             return [SCREEN_WIDTH/2-self.pos[0], SCREEN_HEIGHT/2-self.pos[1]]
@@ -119,7 +134,12 @@ def update(boids: list[Boid]) -> None:
         if tvec[1] > vy:
             diff_angle *= -1
         
-        boid.vel = abs(math.cos(diff_angle))*VELOCITY_FACTOR
+        if boid.vel < MAX_VEL:
+            if boid.vel >= MIN_VEL:
+                boid.vel += math.cos(diff_angle)*ACC_FACTOR
+            else:
+                boid.vel += abs(math.cos(diff_angle))*ACC_FACTOR
+
         boid.angle += diff_angle*DT
         boid.pos[0] += vx*DT
         boid.pos[1] += vy*DT
@@ -128,7 +148,7 @@ def main():
     run = True
     clock = pygame.time.Clock()
     boids = []
-    for i in range(60):
+    for i in range(NUM_OF_BOIDS):
         angle = random.uniform(-1, 1) + math.pi
         pos = [random.randint(0, SCREEN_WIDTH), random.randint(0,SCREEN_HEIGHT)]
         b = Boid(pos, random.randint(1, 50), angle)
