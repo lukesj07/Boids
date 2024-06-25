@@ -18,11 +18,10 @@ class Boid:
         self._pos = pos
         self._vel = vel
         self._angle = angle
-
+    
     def draw_boid(self):
         x1 = (-8)*math.cos(self._angle)-(18)*math.sin(self._angle)+self._pos[0]
         y1 = (-8)*math.sin(self._angle)+(18)*math.cos(self._angle)+self._pos[1]
-
         x2 = (8)*math.cos(self._angle)-(18)*math.sin(self._angle)+self._pos[0]
         y2 = (8)*math.sin(self._angle)+(18)*math.cos(self._angle)+self._pos[1]
         pygame.draw.polygon(surface, WHITE, [self._pos, (x1, y1), (x2, y2)])
@@ -91,7 +90,7 @@ def vector_magnitude(v: list[float]) -> float:
     return sum([s * s for s in v]) ** 0.5
 
 def update(boids: list[Boid]) -> None:
-    for i, boid in enumerate(boids):
+    for boid in boids:
         theta = boid.angle + math.pi + 1.15257199722 #arctan(18/8)
         if theta > 2 * math.pi:
             theta -= 2 * math.pi
@@ -125,7 +124,7 @@ def main():
     for i in range(60):
         angle = random.uniform(-1, 1) + math.pi
         pos = [random.randint(0, 900), random.randint(0,900)]
-        b = Boid(pos, random.randint(-50, 50), angle)
+        b = Boid(pos, random.randint(1, 50), angle)
         boids.append(b)
         
     while run:
