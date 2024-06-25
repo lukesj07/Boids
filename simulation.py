@@ -5,8 +5,8 @@ import random
 
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 900
-WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 DT = 1/60
 ANGLE_FACTOR = 1
 BOID_LEG = 8
@@ -20,8 +20,6 @@ MIN_VEL = 50
 MAX_VEL = 400
 NUM_OF_BOIDS = 50
 
-COLORS = [(255, 255, 255), (0, 255, 255), (0, 0, 255)]
-
 pygame.init()
 display = pygame.display
 surface = display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -32,7 +30,6 @@ class Boid:
         self._pos = pos
         self._vel = vel
         self._angle = angle
-        self._color = random.choice(COLORS)
     
     def draw_boid(self):
         sin_a, cos_a = math.sin(self._angle), math.cos(self._angle)
@@ -52,7 +49,6 @@ class Boid:
         avg_x, avg_y = 0, 0
         svec = [0, 0]
         avg_angle = 0
-        avg_color = [0, 0, 0]
         for boid in boids:
             flag = False
             loop_d = self.loop_distance(boid)
@@ -71,10 +67,8 @@ class Boid:
                     num_close_boids += 1
                     avg_angle += boid.angle
 
-       
         if num_close_boids == 0:
             return [SCREEN_WIDTH/2-self.pos[0], SCREEN_HEIGHT/2-self.pos[1]]
-
         m_vec = [(avg_x/num_close_boids-self._pos[0]*MVEC_FACTOR), (avg_y/num_close_boids-self._pos[1])*MVEC_FACTOR]
         s_vec = [-(avg_x-self.pos[0]*num_close_boids*SVEC_FACTOR), -(avg_y-self.pos[1]*num_close_boids*SVEC_FACTOR)]
         avg_angle /= num_close_boids
@@ -108,14 +102,6 @@ class Boid:
     @angle.setter
     def angle(self, newangle: float) -> None:
         self._angle = newangle
-
-    @property
-    def color(self) -> tuple:
-        return self._color
-
-    @color.setter
-    def color(self, newcolor) -> None:
-        self._color = newcolor
 
 def dot_product(vec1: list[float], vec2: list[float]) -> list[float]:
     return sum([vec1[i]*vec2[i] for i in range(len(vec1))])
