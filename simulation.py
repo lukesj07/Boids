@@ -20,6 +20,8 @@ MIN_VEL = 50
 MAX_VEL = 400
 NUM_OF_BOIDS = 50
 
+COLORS = [(255, 255, 255), (0, 255, 255), (0, 0, 255)]
+
 pygame.init()
 display = pygame.display
 surface = display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -30,6 +32,7 @@ class Boid:
         self._pos = pos
         self._vel = vel
         self._angle = angle
+        self._color = random.choice(COLORS)
     
     def draw_boid(self):
         sin_a, cos_a = math.sin(self._angle), math.cos(self._angle)
@@ -49,22 +52,25 @@ class Boid:
         avg_x, avg_y = 0, 0
         svec = [0, 0]
         avg_angle = 0
+        avg_color = [0, 0, 0]
         for boid in boids:
+            flag = False
             loop_d = self.loop_distance(boid)
             if self != boid:
                 if vector_magnitude(self.calculate_distance_vector(boid)) < VISION_RADIUS:
-                    num_close_boids += 1
                     avg_x += boid.pos[0]
                     avg_y += boid.pos[1]
-                    avg_angle += boid.angle
+                    flag = True
                 elif loop_d[0] < VISION_RADIUS:
-                    num_close_boids += 1
-                    avg_angle += boid.angle
                     avg_x -= boid.pos[0]
+                    flag = True
                 elif loop_d[1] < VISION_RADIUS:
+                    avg_y -= boid.pos[1]
+                    flag = True
+                if flag:
                     num_close_boids += 1
                     avg_angle += boid.angle
-                    avg_y -= boid.pos[1]
+
        
         if num_close_boids == 0:
             return [SCREEN_WIDTH/2-self.pos[0], SCREEN_HEIGHT/2-self.pos[1]]
@@ -102,6 +108,14 @@ class Boid:
     @angle.setter
     def angle(self, newangle: float) -> None:
         self._angle = newangle
+
+    @property
+    def color(self) -> tuple:
+        return self._color
+
+    @color.setter
+    def color(self, newcolor) -> None:
+        self._color = newcolor
 
 def dot_product(vec1: list[float], vec2: list[float]) -> list[float]:
     return sum([vec1[i]*vec2[i] for i in range(len(vec1))])
