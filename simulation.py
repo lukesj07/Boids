@@ -17,9 +17,8 @@ MVEC_FACTOR = 7
 VISION_RADIUS = 200
 ACC_FACTOR = 0.5
 MIN_VEL = 50
-MAX_VEL = 300
-NUM_OF_BOIDS = 70
-
+MAX_VEL = 400
+NUM_OF_BOIDS = 50
 
 pygame.init()
 display = pygame.display
@@ -33,10 +32,11 @@ class Boid:
         self._angle = angle
     
     def draw_boid(self):
-        x1 = (-BOID_LEG)*math.cos(self._angle)-(BOID_HEIGHT)*math.sin(self._angle)+self._pos[0]
-        y1 = (-BOID_LEG)*math.sin(self._angle)+(BOID_HEIGHT)*math.cos(self._angle)+self._pos[1]
-        x2 = (BOID_LEG)*math.cos(self._angle)-(BOID_HEIGHT)*math.sin(self._angle)+self._pos[0]
-        y2 = (BOID_LEG)*math.sin(self._angle)+(BOID_HEIGHT)*math.cos(self._angle)+self._pos[1]
+        sin_a, cos_a = math.sin(self._angle), math.cos(self._angle)
+        x1 = (-BOID_LEG)*cos_a-(BOID_HEIGHT)*sin_a+self._pos[0]
+        y1 = (-BOID_LEG)*sin_a+(BOID_HEIGHT)*cos_a+self._pos[1]
+        x2 = (BOID_LEG)*cos_a-(BOID_HEIGHT)*sin_a+self._pos[0]
+        y2 = (BOID_LEG)*sin_a+(BOID_HEIGHT)*cos_a+self._pos[1]
         pygame.draw.polygon(surface, WHITE, [self._pos, (x1, y1), (x2, y2)])
 
     def loop_distance(self, boid: "Boid") -> float:
@@ -65,8 +65,6 @@ class Boid:
                     num_close_boids += 1
                     avg_angle += boid.angle
                     avg_y -= boid.pos[1]
-
-
        
         if num_close_boids == 0:
             return [SCREEN_WIDTH/2-self.pos[0], SCREEN_HEIGHT/2-self.pos[1]]
@@ -105,7 +103,7 @@ class Boid:
     def angle(self, newangle: float) -> None:
         self._angle = newangle
 
-def dproduct(vec1: list[float], vec2: list[float]) -> list[float]:
+def dot_product(vec1: list[float], vec2: list[float]) -> list[float]:
     return sum([vec1[i]*vec2[i] for i in range(len(vec1))])
 
 def vector_magnitude(v: list[float]) -> float:
@@ -130,7 +128,7 @@ def update(boids: list[Boid]) -> None:
         elif boid.pos[0] >= SCREEN_WIDTH:
             boid.pos[0] = 0
 
-        diff_angle = math.acos(dproduct([vx, vy], tvec)/(vector_magnitude([vx, vy])*vector_magnitude(tvec)))
+        diff_angle = math.acos(dot_product([vx, vy], tvec)/(vector_magnitude([vx, vy])*vector_magnitude(tvec)))
         if tvec[1] > vy:
             diff_angle *= -1
         
@@ -150,7 +148,7 @@ def main():
     boids = []
     for i in range(NUM_OF_BOIDS):
         angle = random.uniform(-1, 1) + math.pi
-        pos = [random.randint(0, SCREEN_WIDTH), random.randint(0,SCREEN_HEIGHT)]
+        pos = [random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)]
         b = Boid(pos, random.randint(1, 50), angle)
         boids.append(b)
         
