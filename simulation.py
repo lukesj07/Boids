@@ -111,7 +111,7 @@ def vector_magnitude(v: list[float]) -> float:
 
 def update(boids: list[Boid]) -> None:
     for boid in boids:
-        theta = boid.angle + math.pi + 1.15257199722 #arctan(18/8)
+        theta = boid.angle + math.pi + 1.15257199722 # arctan(18/8)
         if theta > 2 * math.pi:
             theta -= 2 * math.pi
 
